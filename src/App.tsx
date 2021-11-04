@@ -3,9 +3,10 @@ import { ToastContainer } from 'react-toastify';
 import { MuiThemeProvider, createTheme } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import 'react-toastify/dist/ReactToastify.css';
-import Header from './components/Header';
+// import Header from './components/Header';
 import Wrapper from './components/Wrapper';
 import NowWhat from './components/NowWhat';
+import ChartHeader from './components/ChartHeader';
 
 const theme = createTheme({
   palette: {
@@ -25,7 +26,8 @@ const App = () => (
   <MuiThemeProvider theme={theme}>
     <CssBaseline />
     <Wrapper>
-      <Header />
+      {/* <Header /> */}
+      <ChartHeader />
       <NowWhat />
       <ToastContainer />
     </Wrapper>
