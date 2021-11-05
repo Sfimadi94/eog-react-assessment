@@ -8,13 +8,30 @@ import {
   FormControl,
   InputLabel,
   makeStyles,
+  Input,
+  LinearProgress,
+  Chip,
 } from '@material-ui/core';
 import { actions } from '../store/metricsReducer';
 import { RootState } from '../store';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   formControl: {
-    minwidth: 100,
+    margin: theme.spacing(1),
+    width: 250,
+    float: 'right',
+    backgroundColor: 'white',
+  },
+  inputLabel: {
+    textAlign: 'center',
+  },
+  chips: {
+    backGroundColor: 'white',
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  chip: {
+    margin: 1,
   },
 }));
 
@@ -45,29 +62,34 @@ function Selection() {
     dispatch(actions.selectedMetric(e.target.value));
   };
 
+  if (!data) {
+    return <LinearProgress />;
+  }
+  // prettier-ignore
   return (
     <FormControl className={classes.formControl}>
-      <InputLabel>Select ...</InputLabel>
-      <Select value={selectedMetric} onChange={handleChange}>
-        {data.getMetrics.map((metric: any) => (
-          <MenuItem value={metric} key={metric}>
-            {metric}
-          </MenuItem>
-        ))}
+      <InputLabel className={classes.inputLabel}>Select ...</InputLabel>
+      <Select
+        multiple
+        value={selectedMetric}
+        onChange={handleChange}
+        input={<Input />}
+        renderValue={selected => (
+          <div className={classes.chips}>
+            {(selected as string[]).map(value => (
+              <Chip key={value} label={value} className={classes.chip} />
+            ))}
+          </div>
+        )}
+      >
         {metricsList.map((item: any) => (
-          <MenuItem value={item}>{item}</MenuItem>
+          <MenuItem value={item} key={item}>
+            {item}
+          </MenuItem>
         ))}
       </Select>
     </FormControl>
   );
-
-  // return (
-  //   <Card>
-  //     <CardContent>
-  //       <div>Hello</div>
-  //     </CardContent>
-  //   </Card>
-  // )
 }
 
 export default Selection;
