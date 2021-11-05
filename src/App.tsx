@@ -3,10 +3,20 @@ import { ToastContainer } from 'react-toastify';
 import { MuiThemeProvider, createTheme } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import 'react-toastify/dist/ReactToastify.css';
+import { Provider } from 'react-redux';
+// prettier-ignore
+import {
+  ApolloProvider,
+  InMemoryCache,
+  ApolloClient,
+  NormalizedCacheObject,
+} from '@apollo/react-hooks';
+import createStore from './store/index';
 // import Header from './components/Header';
 import Wrapper from './components/Wrapper';
-import NowWhat from './components/NowWhat';
-import ChartHeader from './components/ChartHeader';
+import Dashboard from './metrics/Dashboard';
+
+const store = createStore();
 
 const theme = createTheme({
   palette: {
@@ -22,15 +32,22 @@ const theme = createTheme({
   },
 });
 
+export const client: ApolloClient<NormalizedCacheObject> = new ApolloClient({
+  uri: 'https://react.eogresources.com/graphql',
+  cache: new InMemoryCache(),
+});
+
 const App = () => (
   <MuiThemeProvider theme={theme}>
     <CssBaseline />
-    <Wrapper>
-      {/* <Header /> */}
-      <ChartHeader />
-      <NowWhat />
-      <ToastContainer />
-    </Wrapper>
+    <Provider store={store}>
+      <ApolloProvider client={client}>
+        <Wrapper>
+          <Dashboard />
+          <ToastContainer />
+        </Wrapper>
+      </ApolloProvider>
+    </Provider>
   </MuiThemeProvider>
 );
 
