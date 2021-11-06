@@ -2,9 +2,16 @@ import React, { useEffect } from 'react';
 import Plot from 'react-plotly.js';
 import { useDispatch, useSelector } from 'react-redux';
 import { makeStyles, LinearProgress } from '@material-ui/core';
-import { useQuery, gql } from '@apollo/react-hooks';
+import { useQuery, useSubscription } from '@apollo/react-hooks';
 import { actions } from '../store/metricsReducer';
 import { RootState } from '../store';
+
+import {
+  GET_MULTIPLE_MEASUREMENTS,
+  NEW_MEASUREMENT_SUBSCRIPTION,
+} from '../services/queries';
+
+import { Measurement } from '../services/interfaces';
 
 const useStyles = makeStyles({
   root: {
@@ -20,28 +27,20 @@ const useStyles = makeStyles({
   },
 });
 
-const GET_MULTIPLE_QUERIES = gql`
-  query ($input: [MeasurementQuery]) {
-    getMultipleMeasurements(input: $input) {
-      measurements {
-        metric
-        at
-        value
-        unit
-      }
-    }
-  }
-`;
-
 function Chart() {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const [initialData, setInitialData] = React.useState<Measurement[]>([]);
 
-  const { selectedMetric, selectedMetricsList, currentTime } = useSelector(
-    (state: RootState) => state.metrics,
-  );
+  // prettier-ignore
+  const {
+    selectedMetric,
+    selectedMetricsList,
+    // subscription,
+    currentTime,
+  } = useSelector((state: RootState) => state.metrics);
 
-  const { data, error } = useQuery(GET_MULTIPLE_QUERIES, {
+  const { data, error } = useQuery(GET_MULTIPLE_MEASUREMENTS, {
     variables: {
       input: selectedMetric.map((metric) => ({
         metricName: metric,
@@ -50,13 +49,30 @@ function Chart() {
     },
   });
 
+  const newValue = useSubscription(NEW_MEASUREMENT_SUBSCRIPTION);
+
   useEffect(() => {
-    if (data) {
-      const { getMultipleMeasurements } = data;
-      dispatch(actions.selectMultipleMetricsList(getMultipleMeasurements));
-      console.log(getMultipleMeasurements);
+    const fetchData = () => {
+      if (data) {
+        const { getMultipleMeasurements } = data;
+        dispatch(actions.selectMultipleMetricsList(getMultipleMeasurements));
+        setInitialData((newData) => [...newData]);
+        console.log('updating');
+      }
+    };
+
+    fetchData();
+
+    // console.log(selectedMetricsList);
+  }, [dispatch, data, error, initialData]);
+
+  useEffect(() => {
+    const { loading } = newValue;
+
+    if (!loading) {
+      dispatch(actions.getSubscriptions(newValue.data));
     }
-  }, [dispatch, data, error]);
+  }, [newValue.data]);
 
   if (!data) {
     return <LinearProgress />;
@@ -64,28 +80,30 @@ function Chart() {
 
   return (
     <div className={classes.root}>
-      <Plot
-        className={classes.chart}
-        data={selectedMetricsList.map((item: any) => ({
-          x: item.measurements.map((list: { at: number }) => list.at),
-          y: item.measurements.map((list: { value: number }) => list.value),
-          type: 'scatter',
-          mode: 'lines',
-          hovertemplate: `
-            %{x} <br>
-            <b>%{text.metric} (%{text.unit})</b>: %{y}
-            `,
-          text: item.measurements,
-        }))}
-        layout={{
-          margin: { t: 40, b: 50 },
-          autosize: true,
-          yaxis: {
-            title: 'temperature (F)',
-            showline: true,
-          },
-        }}
-      />
+      {selectedMetric.length !== 0 ? (
+        <Plot
+          className={classes.chart}
+          data={selectedMetricsList.map((item: any) => ({
+            x: item.measurements.map((list: { at: number }) => list.at),
+            y: item.measurements.map((list: { value: number }) => list.value),
+            type: 'scatter',
+            mode: 'lines',
+            hovertemplate: `
+          %{x} <br>
+          <b>%{text.metric} (%{text.unit})</b>: %{y}
+          `,
+            text: item.measurements,
+          }))}
+          layout={{
+            margin: { t: 40, b: 50 },
+            autosize: true,
+            yaxis: {
+              title: 'temperature (F)',
+              showline: true,
+            },
+          }}
+        />
+      ) : null}
     </div>
   );
 }

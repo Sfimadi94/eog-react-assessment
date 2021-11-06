@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useQuery, gql } from '@apollo/react-hooks';
+import { useQuery } from '@apollo/react-hooks';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Select,
@@ -13,6 +13,9 @@ import {
 } from '@material-ui/core';
 import { actions } from '../store/metricsReducer';
 import { RootState } from '../store';
+
+import { GET_METRICS } from '../services/queries';
+// import { Metric } from '../services/interfaces';
 
 const useStyles = makeStyles((theme) => ({
   formControl: {
@@ -36,16 +39,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const metricsQuery = gql`
-  query {
-    getMetrics
-  }
-`;
-
 function Selection() {
   const dispatch = useDispatch();
   const classes = useStyles();
-  const { data, error } = useQuery(metricsQuery);
+  const { data, error } = useQuery(GET_METRICS);
   const { metricsList, selectedMetric } = useSelector(
     (state: RootState) => state.metrics,
   );
@@ -65,9 +62,14 @@ function Selection() {
     dispatch(actions.selectedMetric(e.target.value));
   };
 
+  const handleDelete = (value: string) => {
+    dispatch(actions.removeMetric(value));
+  };
+
   if (!data) {
     return <LinearProgress />;
   }
+
   return (
     <FormControl className={classes.formControl}>
       <InputLabel className={classes.inputLabel}>Select ...</InputLabel>
@@ -79,7 +81,15 @@ function Selection() {
         renderValue={(selected) => (
           <div className={classes.chips}>
             {(selected as string[]).map((value) => (
-              <Chip key={value} label={value} className={classes.chip} />
+              <Chip
+                onMouseDown={(event) => {
+                  event.stopPropagation();
+                }}
+                key={value}
+                label={value}
+                className={classes.chip}
+                onDelete={() => handleDelete(value)}
+              />
             ))}
           </div>
         )}
