@@ -7,7 +7,7 @@ module.exports = {
     node: true,
   },
   parser: '@typescript-eslint/parser', // Specifies the ESLint parser
-  extends: ['airbnb-typescript'],
+  extends: ['airbnb-typescript', 'plugin:react/recommended'],
   globals: {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly',
@@ -37,6 +37,5 @@ module.exports = {
     'arrow-parens': [0, { requireForBlockBody: false }],
     'jsx-quotes': 'off',
     'react/jsx-one-expression-per-line': 'off',
-
   },
 };

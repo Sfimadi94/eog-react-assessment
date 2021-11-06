@@ -19,7 +19,7 @@ const slice = createSlice({
       state.selectedMetric = action.payload;
       state.currentTime = Date.now() - 180000;
     },
-    selectedMetricsList: (state, action) => {
+    selectMultipleMetricsList: (state, action) => {
       state.selectedMetricsList = action.payload;
     },
   },

@@ -10,9 +10,5 @@ const useStyles = makeStyles({
 
 export default () => {
   const classes = useStyles();
-  return (
-    <CardContent className={classes.taskBar}>
-      {/* <Selection /> */}
-    </CardContent>
-  );
+  return <CardContent className={classes.taskBar}></CardContent>;
 };

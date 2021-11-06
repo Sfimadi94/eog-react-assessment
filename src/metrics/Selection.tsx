@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { useQuery, gql } from '@apollo/react-hooks';
 import { useDispatch, useSelector } from 'react-redux';
-// prettier-ignore
 import {
   Select,
   MenuItem,
@@ -19,8 +18,10 @@ const useStyles = makeStyles((theme) => ({
   formControl: {
     margin: theme.spacing(1),
     width: 250,
+    position: 'relative',
     float: 'right',
     backgroundColor: 'white',
+    marginBottom: 30,
   },
   inputLabel: {
     textAlign: 'center',
@@ -45,7 +46,9 @@ function Selection() {
   const dispatch = useDispatch();
   const classes = useStyles();
   const { data, error } = useQuery(metricsQuery);
-  const { metricsList, selectedMetric } = useSelector((state: RootState) => state.metrics);
+  const { metricsList, selectedMetric } = useSelector(
+    (state: RootState) => state.metrics,
+  );
 
   useEffect(() => {
     if (data) {
@@ -65,7 +68,6 @@ function Selection() {
   if (!data) {
     return <LinearProgress />;
   }
-  // prettier-ignore
   return (
     <FormControl className={classes.formControl}>
       <InputLabel className={classes.inputLabel}>Select ...</InputLabel>
@@ -74,9 +76,9 @@ function Selection() {
         value={selectedMetric}
         onChange={handleChange}
         input={<Input />}
-        renderValue={selected => (
+        renderValue={(selected) => (
           <div className={classes.chips}>
-            {(selected as string[]).map(value => (
+            {(selected as string[]).map((value) => (
               <Chip key={value} label={value} className={classes.chip} />
             ))}
           </div>
