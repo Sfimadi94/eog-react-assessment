@@ -13,3 +13,8 @@ export interface MultipleMeasurements {
   metric: String;
   measurement: Measurement;
 }
+
+export interface MetricList {
+  metric: String;
+  measurement: Measurement[];
+}

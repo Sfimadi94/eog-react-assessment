@@ -27,16 +27,38 @@ const useStyles = makeStyles({
   },
 });
 
+// Updates the values with incoming Subscription if it matches
+const updateData = (selectedData: any, newMeasurement: any) => {
+  let newArray: any[] = [];
+  const newSelectedData = [...selectedData];
+  for (let i = 0; i < selectedData.length; i += 1) {
+    if (
+      selectedData[i].measurements[0].metric.includes(
+        newMeasurement.newMeasurement.metric,
+      )
+    ) {
+      newArray = [...selectedData[i].measurements];
+      newArray.push(newMeasurement.newMeasurement);
+      newArray.shift();
+
+      newSelectedData[i] = newArray;
+    }
+  }
+
+  return newSelectedData;
+};
+
 function Chart() {
   const classes = useStyles();
   const dispatch = useDispatch();
   const [initialData, setInitialData] = React.useState<Measurement[]>([]);
+  // const [newData, setNewData] = React.useState<Measurement[]>([])
 
   // prettier-ignore
   const {
     selectedMetric,
     selectedMetricsList,
-    // subscription,
+    subscription,
     currentTime,
   } = useSelector((state: RootState) => state.metrics);
 
@@ -56,18 +78,29 @@ function Chart() {
       if (data) {
         const { getMultipleMeasurements } = data;
         dispatch(actions.selectMultipleMetricsList(getMultipleMeasurements));
-        setInitialData((newData) => [...newData]);
-        console.log('updating');
+        setInitialData(data);
       }
     };
 
     fetchData();
-
-    // console.log(selectedMetricsList);
   }, [dispatch, data, error, initialData]);
 
   useEffect(() => {
     const { loading } = newValue;
+
+    if (
+      // prettier-ignore
+      Object.keys(subscription).length > 0
+      && Object.keys(selectedMetricsList).length > 0
+    ) {
+      // This updates the old value with the new subscription values
+
+      const freshData = updateData(selectedMetricsList, subscription);
+      dispatch(actions.getFreshData(freshData));
+      // dispatch(actions.selectMultipleMetricsList(freshData));
+      setInitialData(freshData);
+      const test = selectedMetricsList.map((item) => item);
+    }
 
     if (!loading) {
       dispatch(actions.getSubscriptions(newValue.data));
@@ -80,7 +113,7 @@ function Chart() {
 
   return (
     <div className={classes.root}>
-      {selectedMetric.length !== 0 ? (
+      {selectedMetricsList.length > 0 ? (
         <Plot
           className={classes.chart}
           data={selectedMetricsList.map((item: any) => ({

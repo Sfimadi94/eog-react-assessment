@@ -25,7 +25,7 @@ const slice = createSlice({
         (metric) => metric !== action.payload,
       );
     },
-    freshData: (state, action) => {
+    getFreshData: (state, action) => {
       state.freshData = action.payload;
     },
     getSubscriptions: (state, action) => {
