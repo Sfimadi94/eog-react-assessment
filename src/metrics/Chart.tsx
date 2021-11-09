@@ -3,6 +3,8 @@ import Plot from 'react-plotly.js';
 import { useDispatch, useSelector } from 'react-redux';
 import { makeStyles, LinearProgress } from '@material-ui/core';
 import { useQuery, useSubscription } from '@apollo/react-hooks';
+// import moment from 'moment';
+
 import { actions } from '../store/metricsReducer';
 import { RootState } from '../store';
 
@@ -11,7 +13,7 @@ import {
   NEW_MEASUREMENT_SUBSCRIPTION,
 } from '../services/queries';
 
-import { Measurement } from '../services/interfaces';
+// import { Measurement } from '../services/interfaces';
 
 const useStyles = makeStyles({
   root: {
@@ -31,23 +33,7 @@ const useStyles = makeStyles({
 const updateData = (selectedData: any, newMeasurement: any) => {
   let newArray: any[] = [];
   const newSelectedData = [...selectedData];
-  // console.log(newSelectedData, 'first', newMeasurement.newMeasurement.metric);
   for (let i = 0; i < selectedData.length; i += 1) {
-    // if (
-    //   selectedData[i].measurements[0].metric.includes(
-    //     newMeasurement.newMeasurement.metric,
-    //   )
-    // ) {
-    //   newArray = [...selectedData[i].measurements];
-    //   newArray.push(newMeasurement.newMeasurement);
-    //   newArray.shift();
-
-    //   const newDataTest = { ...newSelectedData[i] };
-    //   // newDataTest = newArray;
-    //   // newSelectedData[i]= newArray;
-    //   newDataTest.measurements = newArray;
-    //   newSelectedData[i] = newDataTest;
-    // }
     // prettier-ignore
     if (
       selectedData[i].measurements[0].metric
@@ -58,8 +44,6 @@ const updateData = (selectedData: any, newMeasurement: any) => {
       newArray.shift();
 
       const newDataTest = { ...newSelectedData[i] };
-      // newDataTest = newArray;
-      // newSelectedData[i]= newArray;
       newDataTest.measurements = newArray;
       newSelectedData[i] = newDataTest;
     }
@@ -71,7 +55,7 @@ const updateData = (selectedData: any, newMeasurement: any) => {
 function Chart() {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const [initialData, setInitialData] = React.useState<Measurement[]>([]);
+  // const [initialData, setInitialData] = React.useState<Measurement[]>([]);
   // const [newData, setNewData] = React.useState<Measurement[]>([]);
 
   // prettier-ignore
@@ -98,9 +82,6 @@ function Chart() {
       if (data) {
         const { getMultipleMeasurements } = await data;
         dispatch(actions.selectMultipleMetricsList(getMultipleMeasurements));
-        setInitialData(getMultipleMeasurements);
-
-        console.log(initialData, 'one');
       }
       if (error) {
         console.log('error');
@@ -110,28 +91,19 @@ function Chart() {
     fetchData();
   }, [dispatch, data]);
 
-  // [dispatch, data, error, setInitialData]
   useEffect(() => {
     const getData = async () => {
-      const { loading } = await newValue;
-
-      if (
-        // prettier-ignore
-        Object.keys(subscription).length > 0
-      && Object.keys(selectedMetricsList).length > 0
-      ) {
-        // This updates the old value with the new subscription values
-        const freshData = updateData(selectedMetricsList, subscription);
-        // console.log(freshData, 'fresh');
-        dispatch(actions.getFreshData(freshData));
-        dispatch(actions.selectMultipleMetricsList(freshData));
-        setInitialData(freshData);
-        console.log(initialData, 'two');
-        // setInitialData(freshData);
-      }
-
-      if (!loading) {
+      if (selectedMetric.length !== 0) {
         dispatch(actions.getSubscriptions(newValue.data));
+        if (
+          // prettier-ignore
+          subscription.length !== 0
+          && selectedMetricsList.length !== 0
+        ) {
+          // This updates the old value with the new subscription values
+          const freshData = updateData(selectedMetricsList, subscription);
+          dispatch(actions.selectMultipleMetricsList(freshData));
+        }
       }
     };
 
@@ -145,6 +117,7 @@ function Chart() {
   return (
     <div className={classes.root}>
       {selectedMetricsList.length > 0 ? (
+        // prettier-ignore
         <Plot
           className={classes.chart}
           data={selectedMetricsList.map((item: any) => ({
@@ -161,9 +134,13 @@ function Chart() {
           layout={{
             margin: { t: 40, b: 50 },
             autosize: true,
+            // xaxis: {
+            //   type: 'date',
+            // },
             yaxis: {
               title: 'temperature (F)',
               showline: true,
+              // type: 'linear',
             },
           }}
         />
