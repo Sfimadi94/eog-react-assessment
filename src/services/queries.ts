@@ -8,19 +8,6 @@ export const GET_METRICS = gql`
   }
 `;
 
-// export const GET_MULTIPLE_MEASUREMENTS = gql`
-//   query ($input: [MeasurementQuery]) {
-//     getMultipleMeasurements(input: $input) {
-//       measurements {
-//         metric
-//         at
-//         value
-//         unit
-//       }
-//     }
-//   }
-// `;
-
 // prettier-ignore
 export const GET_MULTIPLE_MEASUREMENTS = gql`query($input: [MeasurementQuery] = [
 {metricName: "tubingPressure", after: ${

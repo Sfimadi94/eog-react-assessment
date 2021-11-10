@@ -3,7 +3,7 @@ import Plot from 'react-plotly.js';
 import { useDispatch, useSelector } from 'react-redux';
 import { makeStyles, LinearProgress } from '@material-ui/core';
 import { useQuery, useSubscription } from '@apollo/react-hooks';
-// import moment from 'moment';
+import moment from 'moment';
 
 import { actions } from '../store/metricsReducer';
 import { RootState } from '../store';
@@ -12,8 +12,6 @@ import {
   GET_MULTIPLE_MEASUREMENTS,
   NEW_MEASUREMENT_SUBSCRIPTION,
 } from '../services/queries';
-
-// import { Measurement } from '../services/interfaces';
 
 const useStyles = makeStyles({
   root: {
@@ -28,6 +26,13 @@ const useStyles = makeStyles({
     width: '100%',
   },
 });
+
+const convertTime = (time: any) => {
+  const day = moment(time);
+  const convert = day.format('h:mm:ss A');
+
+  return convert;
+};
 
 // Updates the values with incoming Subscription if it matches
 const updateData = (selectedData: any, newMeasurement: any) => {
@@ -55,9 +60,6 @@ const updateData = (selectedData: any, newMeasurement: any) => {
 function Chart() {
   const classes = useStyles();
   const dispatch = useDispatch();
-  // const [initialData, setInitialData] = React.useState<Measurement[]>([]);
-  // const [newData, setNewData] = React.useState<Measurement[]>([]);
-
   // prettier-ignore
   const {
     selectedMetric,
@@ -70,7 +72,7 @@ function Chart() {
     variables: {
       input: selectedMetric.map((metric) => ({
         metricName: metric,
-        after: currentTime,
+        after: currentTime - 30 * 60 * 1000,
       })),
     },
   });
@@ -84,7 +86,7 @@ function Chart() {
         dispatch(actions.selectMultipleMetricsList(getMultipleMeasurements));
       }
       if (error) {
-        console.log('error');
+        console.log(error);
       }
     };
 
@@ -121,7 +123,7 @@ function Chart() {
         <Plot
           className={classes.chart}
           data={selectedMetricsList.map((item: any) => ({
-            x: item.measurements.map((list: { at: number }) => list.at),
+            x: item.measurements.map((list: { at: number }) => convertTime(list.at)),
             y: item.measurements.map((list: { value: number }) => list.value),
             type: 'scatter',
             mode: 'lines',
@@ -131,16 +133,16 @@ function Chart() {
           `,
             text: item.measurements,
           }))}
+          config={{
+            displayModeBar: false,
+          }}
           layout={{
             margin: { t: 40, b: 50 },
             autosize: true,
-            // xaxis: {
-            //   type: 'date',
-            // },
             yaxis: {
               title: 'temperature (F)',
               showline: true,
-              // type: 'linear',
+              type: 'linear',
             },
           }}
         />
